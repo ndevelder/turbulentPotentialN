@@ -1,4 +1,3 @@
-
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM Extend Project: Open Source CFD        |
@@ -15,13 +14,13 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-RASModel            turbulentPotentialAlphaEh;
+RASModel            turbulentPotentialN;
 
 turbulence          on;
 
 printCoeffs         on;
 
-turbulentPotentialAlphaEhCoeffs{
+turbulentPotentialNCoeffs{
 
 	solveK              true;
 	solveEps            true;
@@ -31,16 +30,16 @@ turbulentPotentialAlphaEhCoeffs{
 
 	sigmaK              1.0; 
 	sigmaEps            0.83; 
-	sigmaPhi            0.4;
-	sigmaPsi            1.2; 
+	sigmaPhi            0.33;
+	sigmaPsi            1.0; 
 	
-	prodType			3.0;
+	prodType			1.0;
 	cPrK				0.4;
 	cPrP				1.0; 
 	pMix				0.5;
-        gType                           4.0;
-        cG				0.067;
-	cGw				0.0;
+        gType                           5.0;
+        cG				0.04;
+	cGw				1.0;
         cGp                             1.0;
 
 	eqncEp1             true;
@@ -57,12 +56,13 @@ turbulentPotentialAlphaEhCoeffs{
 	cA                  1.0;  
 	
 	dampType			15.0;
-	cNF					12.0;
+	cNF					6.0;
 	nutRatMax			1e5;
 	eqncMu				false;
 	cMu					0.21;
 	betaK				0.09;
         nutReal				false;
+	nutType                         3.0;
 	
 	cL1					0.36;
 	cL2					85; 
@@ -71,15 +71,18 @@ turbulentPotentialAlphaEhCoeffs{
 
 	cD1					0.0; 
 	cD2					0.0;
-	cD3					1.0;
-	cD4					3.2;
+	cD3					1.05;
+	cD4					1.05;
 
-	cP1					1.2; 
-        cP1beta                                 1.4;
-	cP1chi					1.4;
+	cP1					0.95; 
+        cP1beta                                 2.0;
+	cP1chi					0.9;
+        cP1pow					1.0;
+	cP1mul					0.0;
         cP2					0.6;
-	cP3					0.34;
-	cP4					0.02;
+	cP3				 	0.34;
+	cP4					4.2;
+        cP5                       		0.04;
 
 	debugWrite          false;
 }
