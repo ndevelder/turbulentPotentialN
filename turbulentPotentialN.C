@@ -31,10 +31,6 @@ License
 #include "fvCFD.H"
 #include "volFields.H"
 #include "wallDist.H"
-#include "IFstream.H"
-#include "OFstream.H"
-#include <ctime>
-#include "Pstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -352,7 +348,7 @@ turbulentPotentialN::turbulentPotentialN
         (
             "cN1",
             coeffDict_,
-            0.67
+            0.6
         )
     ),
 	cN2_
@@ -361,7 +357,7 @@ turbulentPotentialN::turbulentPotentialN
         (
             "cN2",
             coeffDict_,
-            2.0
+            2.2
         )
     ),
 	pMix_
@@ -1054,8 +1050,8 @@ void turbulentPotentialN::correct()
     // Timestep - for use in elliptic switch
     //*************************************//
 	
-    dimensionedScalar cTime = U_.mesh().time().value();
-	word sMMdebug = runTime_.controlDict().lookup("showMaxMin");
+    //dimensionedScalar cTime = U_.mesh().time().value();
+	//word sMMdebug = runTime_.controlDict().lookup("showMaxMin");
 
     //*************************************//	
     // Vorticity and Gradient
@@ -1343,32 +1339,21 @@ void turbulentPotentialN::correct()
     epsHat_ = epsilon_/(k_ + (cEhmM_*nu()*mag(gradkSqrt_)) + k0_);
     bound(epsHat_,eH0);
 
-	
-	
+		
 	
     //*************************************//
-    // Fix for separated flows 
+    // Fix for separated flows and transition
     //*************************************// 	
 
 	volScalarField cTexp("cTexp", cT_*(1.0-gamma_)*sqrt((((nu()/100.0)+nut_)/nu())));
-	
     volScalarField transPhi("transPhi", cTexp*cA_*((2.0/3.0) - tpphi_)*tpProd_);	
 	volVectorField transPsi("transPsi", cTexp*((1.0 - alpha_)*vorticity_ - cA_*tppsi_*tpProd_));	
 	
-
 
 	
 	//*************************************//
     // Phi/K equation 
     //*************************************//
-	//cP1eqn_ = (cP1_ + cP1beta_*pOD)*(1.0-cP1chi_*alpha_)/pow(1.0 - gamma_,0.5);
-    //cP1eqn_ = cP1_*(1.0 - gamma_)*(1.0 + cP1chi_*mag(tppsi_) + cP1beta_*sqr(tpphi_));
-	//cP1eqn_ = cP1_*(1.0 - gamma_)*(1.0 + pow((tpphi_*tpphi_ + (tppsi_ & tppsi_)) + SMALL,0.5));
-	//cP1eqn_ = cP1_*(1.0 - gamma_)*(1.0 + mag(tppsi_*k_)/(cP1beta_*alpha_*k_ + cP1chi_*tpphi_*k_ + k0_)); 
-	//cP1eqn_ = cP1_*(1.0 - gamma_)*(1.0 + cP1mul_*pow(mag(tppsi_*k_)/(cP1beta_*alpha_*k_ + cP1chi_*tpphi_*k_ + k0_),cP1pow_));
-	
-	//cP1eqn_ = (cP1beta_*cP1_*(1.0-cP1chi_*alpha_) + 1.0)*(1.0-gamma_);	
-	//cP1eqn_ = (cP1_*(cP1beta_ + cP1chi_*pOD) + 1.0)*(1.0-gamma_);
 	
 	if(cP1type_.value() == 0.0){
 		Info<< "cP1 constant*nutFrac" << endl;
@@ -1405,13 +1390,10 @@ void turbulentPotentialN::correct()
 	  // Non-linear pressure strain
 	  + cD3_*(nutFrac()*(2.0-gamma_))*(sqr(bphi) + (tppsi_ & tppsi_) - (2.0/3.0)*IIb)*epsHat_
 	  
-	  // Pressure Strain Fast
-	  //+ cP2_*tpProd_*tpphi_
-
-	  // From K eqn
+	  // From K eqn + pressure strain fast
       - fvm::Sp((1.0-cP2_)*tpProd_,tpphi_)
 	  
-	  // Dissipation
+	  // Dissipation (Commented as taken into account in cP1eqn)
 	  //- fvm::Sp((1.0-gamma_)*(2.0/3.0)*epsHat_/((tpphi_ + tph0)),tpphi_)
 	  //+ (1.0-gamma_)*tpphi_*epsHat_
 	  
@@ -1434,23 +1416,11 @@ void turbulentPotentialN::correct()
     //*************************************//
 	//volVectorField psiDisWall("psiDisWall", cD1_*gamma_*(1.0-alpha_)*vorticity_);	
 	//volVectorField psiDisWall("psiDisWall", cD1_*(2.0*alpha_-1.0)*gamma_*tpphi_*vorticity_);
+	//volScalarField cS("cS", cP3_*gamma_*IIb*(tppsi_ & tppsi_) + cP4_*IIb*sqr(1.0-alpha_));
+	
 	volVectorField psiDisWall("psiDisWall", cD1_*gammak*alpha_*epsHat_*tppsi_);
-	
-	//volScalarField cS("cS", (cP4_*gamma_*(tppsi_ & tppsi_) + cP3_*(1.0-alpha_)*(1.0-cP5_*((2.0/3.0)-tpphi_)*pow(nut_/nu() + SMALL,0.5))));
-	//volScalarField cS("cS", cP3_*(1.0-alpha_)*(1.0 - pow((((2.0/3.0)-tpphi_)*((2.0/3.0)-tpphi_) + (tppsi_ & tppsi_)) + SMALL,0.5))*(1.0-cP4_*sqrt(nut_/nu() + SMALL)));
-	//volScalarField cS("cS", cP3_*(1.0-alpha_)*(1.0 - cP4_*pow((((2.0/3.0)-tpphi_)*((2.0/3.0)-tpphi_) + (tppsi_ & tppsi_)) + SMALL,0.5)));
-	
-	//volScalarField cS("cS", cP3_*(1.0-alpha_) + cP4_*(tppsi_ & tppsi_));
-	//volScalarField cS("cS", cP3_*(cP4_*D*IIb + cP5_*(1.0-alpha_)));
-	
-	volScalarField beta("beta", 1.0/(1.0+cP5_*alpha_*pow(nut_/nu() + SMALL,0.5)));
-	
-	//volScalarField cS("cS", (cP3_*alpha_*(tppsi_ & tppsi_) + cP4_*(1.0-alpha_)*D));  
-	//volScalarField cS("cS", 2.0*(cP3_*(tppsi_ & tppsi_) + cP4_*sqr(tpphi_))); 
-  	volScalarField cS("cS", cP3_*gamma_*IIb*(tppsi_ & tppsi_) + cP4_*IIb*sqr(1.0-alpha_));
-	//volScalarField cS("cS", cP3_*sqr(tpchi_));
-	//volScalarField cS("cS", cP3_*sqrt(alpha_)*tpphi_);     
-	  
+  	
+
     //*************************************//     
     // Psi Equation
     //*************************************//
@@ -1511,33 +1481,7 @@ void turbulentPotentialN::correct()
 	
     if(solveNut_ == "true")     
     {
-		nut_ = cMu_*k_*tpphi_*T;
-		Info<< "Nut type: " << nutType_.value() << endl; 
-		
-		if(nutType_.value() == 1.0){
-			Info<< "Using standard nut" << endl;
-		}
-		
-		if(nutType_.value() == 2.0){
-			Info<< "Using phi^2 + psi^2 nut" << endl;
-			nut_ = cMu_*((4.0/3.0)*sqr(phiActual) + (8.0/3.0)*(psiActual & psiActual))/epsilon_;
-		}
-		
-		if(nutType_.value() == 3.0){
-			Info<< "Using phik + psi^2 nut" << endl;
-			nut_ = cMu_*((8.0/12.0)*phiActual*k_ + (24.0/12.0)*(psiActual & psiActual))/epsilon_;
-		}
-		
-		if(nutType_.value() == 4.0){
-			Info<< "Using alpha w/ phik + psi^2 nut" << endl;
-			nut_ = 0.21*(1.286*(1.0-alpha_)*phiActual*k_ + 4.762*alpha_*(psiActual & psiActual))/epsilon_;
-		}
-		
-		if(nutType_.value() == 5.0){
-			Info<< "Using Cphik + Cpsi^2 nut" << endl;
-			nut_ = cMu_*(cN1_*phiActual*k_ + cN2_*(psiActual & psiActual))/epsilon_;
-		}
-		
+		nut_ = cMu_*(cN1_*phiActual*k_ + cN2_*(psiActual & psiActual))/epsilon_;		
 		nut_ = min(nut_,nutRatMax_*nu()); 
 		nut_.correctBoundaryConditions();
         bound(nut_,nut0); 
@@ -1548,7 +1492,7 @@ void turbulentPotentialN::correct()
     // Output some max values
     //*************************************//
 	
-	if(sMMdebug == "true")
+	if(debugWrite_ == "true")
 	{    
 	volScalarField meanUz("meanUz",U_.component(2));
 	volScalarField uTauSquared((nu() + nut_)*vorticity_.component(2));
