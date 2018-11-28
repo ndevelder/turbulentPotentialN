@@ -88,7 +88,7 @@ class turbulentPotentialN
 			dimensionedScalar cP1beta_;
 			dimensionedScalar cP1chi_;
 			dimensionedScalar cP1pow_;
-			dimensionedScalar cP1mul_;
+			dimensionedScalar cP1type_;
             dimensionedScalar cP2_;
             dimensionedScalar cP3_;
             dimensionedScalar cP4_;
@@ -96,7 +96,7 @@ class turbulentPotentialN
 			dimensionedScalar cL1_;
 			dimensionedScalar cL2_;
             dimensionedScalar cMu_;
-			dimensionedScalar betaK_;
+			dimensionedScalar betaK_;  
             dimensionedScalar cT_;
 			dimensionedScalar cA_;
 			dimensionedScalar cG_;
@@ -104,6 +104,8 @@ class turbulentPotentialN
 			dimensionedScalar cGp_;
             dimensionedScalar cEhmM_;
 			dimensionedScalar cNF_;
+			dimensionedScalar cN1_;
+			dimensionedScalar cN2_;
 			dimensionedScalar pMix_;
 			dimensionedScalar cPrK_;
 			dimensionedScalar cPrP_;
