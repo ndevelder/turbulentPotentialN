@@ -1064,24 +1064,24 @@ void turbulentPotentialN::correct()
     // Length and Time Scales
     //*************************************//	
 	
-	const volScalarField L("Length",Ls());
-	const volScalarField L2("Lsqr",sqr(L));
+	//const volScalarField L("Length",Ls());
+	//const volScalarField L2("Lsqr",sqr(L));
 	const volScalarField T("Time",Ts());	
 		
-	const volScalarField nutPsi("nutPsi", mag(tppsi_)*k_/(mag(vorticity_) + (cNL_/Ts())));
+	//const volScalarField nutPsi("nutPsi", mag(tppsi_)*k_/(mag(vorticity_) + (cNL_/Ts())));
 
 	
 	//*************************************//	
     // Misc Terms
     //*************************************//
 
-	const volVectorField gradPhi_("gradPhi", fvc::grad(phiReal()));		
-	const volScalarField gradgradPhi_("gradgradPhi", fvc::laplacian(DphiEff(),phiReal()));
+	//const volVectorField gradPhi_("gradPhi", fvc::grad(phiReal()));		
+	//const volScalarField gradgradPhi_("gradgradPhi", fvc::laplacian(DphiEff(),phiReal()));
 
 	tpphiSqrt_ = sqrt(tpphi_ + ROOTVSMALL);
 	const volVectorField gradTpphiSqrt("gradTpphiSqrt",fvc::grad(tpphiSqrt_));
 	
-    gradTpphi_ = fvc::grad(tpphi_);
+    //gradTpphi_ = fvc::grad(tpphi_);
     phiSqrt_ = sqrt(tpphi_*k_ + k0_);
 	const volVectorField gradPhiSqrt_("gradPhiSqrt",fvc::grad(phiSqrt_));	
 	
@@ -1130,9 +1130,6 @@ void turbulentPotentialN::correct()
 	tpProdSqr_ = sqr(tpProd_);
 	tpProd3d_ = mag(psiReal() ^ vorticity_);
 	
-	const volScalarField pOD = G/epsilon_; 
-	
-	
 	
 
 	//*************************************//	
@@ -1164,8 +1161,8 @@ void turbulentPotentialN::correct()
 	volScalarField bchi("bchi", tpchi_ - (2.0/3.0));
 	volScalarField bups("bups", tpupsilon_ - (2.0/3.0));
 	
-	volScalarField D("D", (27.0/8.0)*(tpupsilon_*tpphi_*tpchi_ - tpchi_*(tppsi_ & tppsi_)));
-	volScalarField II("II", 0.5*(sqr(tpupsilon_) + sqr(tpphi_) + sqr(tpchi_) + 2.0*(tppsi_ & tppsi_)));
+	//volScalarField D("D", (27.0/8.0)*(tpupsilon_*tpphi_*tpchi_ - tpchi_*(tppsi_ & tppsi_)));
+	//volScalarField II("II", 0.5*(sqr(tpupsilon_) + sqr(tpphi_) + sqr(tpchi_) + 2.0*(tppsi_ & tppsi_)));
 	volScalarField IIb("IIb", 0.5*(sqr(bups) + sqr(bphi) + sqr(bchi) + 2.0*(tppsi_ & tppsi_)));
 	
 	bound(IIb, SMALL);
@@ -1203,12 +1200,9 @@ void turbulentPotentialN::correct()
      - fvm::Sp(cEp2_*epsHat_,epsilon_)
     );
 
-    if(solveEps_ == "true")
-    {
     epsEqn().relax();
     solve(epsEqn);
     bound(epsilon_,epsilonSmall_);
-    }
 	
 	
 	
@@ -1229,13 +1223,10 @@ void turbulentPotentialN::correct()
       - fvm::Sp(epsilon_/(k_+k0_),k_)
     );
 
-
-    if(solveK_ == "true")
-    {
     kEqn().relax();
     solve(kEqn);
     bound(k_,k0_);
-    } 
+ 
 	
 	
 	kSqrt_ = sqrt(mag(k_)+k0_);
@@ -1268,27 +1259,9 @@ void turbulentPotentialN::correct()
 	//*************************************//
     // Phi/K equation 
     //*************************************//
-	
-	if(cP1type_.value() == 0.0){
-		Info<< "cP1 constant*nutFrac" << endl;
-		cP1eqn_ = (cP1_-1.0)*nutFrac();
-	}
-	
-	if(cP1type_.value() == 1.0){
-		Info<< "cP1 constant*(1-gamma)^p*nutFrac" << endl;
-		cP1eqn_ = (cP1_-1.0)*nutFrac()*pow((1.0-gamma_)+SMALL,cP1pow_);
-	}
-	
-	if(cP1type_.value() == 2.0){
-		Info<< "cP1 constant*nutFrac*(2a-1)/a" << endl;
-		cP1eqn_ = (cP1_-1.0)*nutFrac()*(2.0*alpha_-1.0)/alpha_;
-	}
-	
-	if(cP1type_.value() == 3.0){
-		Info<< "cP1 constant*alpha*(1-gamma)" << endl;
-		cP1eqn_ = (cP1_-1.0)*nutFrac()*alpha_*pow((1.0-gamma_)+SMALL,cP1pow_);  
-	}
-	
+
+	cP1eqn_ = (cP1_-1.0)*nutFrac()*pow((1.0-gamma_)+SMALL,cP1pow_);
+
     tmp<fvScalarMatrix> tpphiEqn  
     ( 
         fvm::ddt(tpphi_)
@@ -1315,25 +1288,10 @@ void turbulentPotentialN::correct()
       + transPhi
     );
 
-    if(solvePhi_ == "true")
-    {
     tpphiEqn().relax();
     solve(tpphiEqn);  
     bound(tpphi_,tph0);
-    }
-
-	
-
-
-    //*************************************//   
-    // Psi Specific Constants
-    //*************************************//
-	//volVectorField psiDisWall("psiDisWall", cD1_*gamma_*(1.0-alpha_)*vorticity_);	
-	//volVectorField psiDisWall("psiDisWall", cD1_*(2.0*alpha_-1.0)*gamma_*tpphi_*vorticity_);
-	//volScalarField cS("cS", cP3_*gamma_*IIb*(tppsi_ & tppsi_) + cP4_*IIb*sqr(1.0-alpha_));
-	
-	volVectorField psiDisWall("psiDisWall", cD1_*(2.0*alpha_-1.0)*epsHat_*tppsi_);
-  	
+ 	
 
     //*************************************//     
     // Psi Equation
@@ -1376,30 +1334,20 @@ void turbulentPotentialN::correct()
       + transPsi
     );
 
-    if(solvePsi_ == "true") 
-    {
     tppsiEqn().relax();
     solve(tppsiEqn);
-    }
-	
-    // Re-calculate psi/k gradient
-    gradTppsi_ = fvc::grad(tppsi_);
-	
 
+	
 
 	//*************************************//
     // Calculate eddy viscosity
     //*************************************//
 
+	nut_ = cMu_*(cN1_*phiActual*k_ + cN2_*(psiActual & psiActual))/epsilon_;		
+	nut_ = min(nut_,nutRatMax_*nu()); 
+	nut_.correctBoundaryConditions();
+    bound(nut_,nut0); 
 
-	
-    if(solveNut_ == "true")     
-    {
-		nut_ = cMu_*(cN1_*phiActual*k_ + cN2_*(psiActual & psiActual))/epsilon_;		
-		nut_ = min(nut_,nutRatMax_*nu()); 
-		nut_.correctBoundaryConditions();
-        bound(nut_,nut0); 
-    }
 
 	
     //*************************************//   
