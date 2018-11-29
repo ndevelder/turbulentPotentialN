@@ -30,39 +30,41 @@ turbulentPotentialNCoeffs{
 
 	sigmaK              1.0; 
 	sigmaEps            0.83; 
-	sigmaPhi            0.33;
-	sigmaPsi            1.0; 
+	sigmaPhi            0.42;
+	sigmaPsi            1.2; 
 	
 	prodType			1.0;
 	cPrK				0.4;
 	cPrP				1.0; 
 	pMix				0.5;
-        gType                           5.0;
-        cG				0.04;
+        gType                           7.0;
+        cG				0.05;
 	cGw				1.0;
         cGp                             1.0;
 
 	eqncEp1             true;
 	eqncEp2             false;
-        cEp1Type			12.0;
+        cEp1Type			2.0;
 	cEp1				1.44;                           
         cEp2con				1.83;
-        cEp4				0.04;
+        cEp4				0.06;
 	eqnEpsHat           mod;
 	cEhmM				10.0;	
 	
 	transType           6.0;
 	cT                  0.0;
-	cA                  1.0;  
+	cA                  0.0;  
 	
 	dampType			15.0;
-	cNF					6.0;
+	cNF					1.0;
+	cN1					0.6;
+	cN2					2.2;
 	nutRatMax			1e5;
 	eqncMu				false;
 	cMu					0.21;
 	betaK				0.09;
         nutReal				false;
-	nutType                         3.0;
+	nutType                         5.0;
 	
 	cL1					0.36;
 	cL2					85; 
@@ -71,20 +73,20 @@ turbulentPotentialNCoeffs{
 
 	cD1					0.0; 
 	cD2					0.0;
-	cD3					1.05;
-	cD4					1.05;
+	cD3					0.4;
+	cD4					0.4;
 
-	cP1					0.95; 
+	cP1					1.67; 
         cP1beta                                 2.0;
 	cP1chi					0.9;
         cP1pow					1.0;
-	cP1mul					0.0;
+	cP1type					1.0;
         cP2					0.6;
-	cP3				 	0.34;
-	cP4					4.2;
+	cP3				 	0.3;
+	cP4					0.03;
         cP5                       		0.04;
 
-	debugWrite          false;
+	debugWrite          true;
 }
 
 

@@ -1059,8 +1059,6 @@ void turbulentPotentialN::correct()
     
 	vorticity_ = fvc::curl(U_);
 	uGrad_ = fvc::grad(U_);
-	
-
 
     //*************************************//	
     // Length and Time Scales
@@ -1082,7 +1080,6 @@ void turbulentPotentialN::correct()
 
 	tpphiSqrt_ = sqrt(tpphi_ + ROOTVSMALL);
 	const volVectorField gradTpphiSqrt("gradTpphiSqrt",fvc::grad(tpphiSqrt_));
-
 	
     gradTpphi_ = fvc::grad(tpphi_);
     phiSqrt_ = sqrt(tpphi_*k_ + k0_);
@@ -1147,49 +1144,11 @@ void turbulentPotentialN::correct()
 	volScalarField phiActual("phiActual",tpphi_*k_);
 	volVectorField psiActual("psiActual",tppsi_*k_);
 
-	//gamma_ = 1.0/(1.0 + cG_*(1.0 - cGw_*alpha_)*(nut_/nu()));
-	volScalarField gammaNut("gammaNut", betaK_*k_*k_/epsilon_);
-	volScalarField gammaWall("gammaWall", 3.0*nu()*(gradTpphiSqrt & gradTpphiSqrt)*k_/epsilon_);
-	
-	if(gType_.value() == 1.0){
-		gammaNut = nut_;
-	}
-	
-	if(gType_.value() == 2.0){
-		gammaNut = betaK_*k_*k_/epsilon_;
-	}
-	
-	if(gType_.value() == 3.0){
-		gammaNut = nutPsi;
-	}
-	
-	if(gType_.value() == 4.0){
-		gammaNut = 0.5*tpphi_*tpphi_*k_*k_/epsilon_;
-	}
-	
-	if(gType_.value() == 5.0){
-		gammaNut = nut_;  
-	}
-	
-	if(gType_.value() == 6.0){
-		gammaNut = (psiActual & psiActual)/epsilon_;  
-	}
-	
-	if(gType_.value() == 7.0){
-		gammaNut = (alpha_*(psiActual & psiActual) + 0.57*(1.0-alpha_)*phiActual*phiActual)/epsilon_;  
-	}
-	
-	if(gType_.value() == 8.0){
-		gammaNut = (alpha_*(psiActual & psiActual) + 0.09*(1.0-alpha_)*k_*k_)/epsilon_;  
-	}
-	
-	if(gType_.value() == 9.0){
-		gammaNut = (alpha_*(psiActual & psiActual) + 0.21*(1.0-alpha_)*phiActual*k_)/epsilon_;  
-	}
-	
+	volScalarField gammaNut("gammaNut", (alpha_*(psiActual & psiActual) + 0.57*(1.0-alpha_)*phiActual*phiActual)/epsilon_);
+	volScalarField gammaWall("gammaWall", 3.0*nu()*(gradTpphiSqrt & gradTpphiSqrt)*k_/epsilon_); 
+
 	gamma_ = 1.0/(1.0 + cG_*pow(gammaNut/nu(),cGp_) + cGw_*gammaWall);
 	
-	volScalarField gammak("gammak", 1.0/(1.0 + cG_*pow((betaK_*k_*k_/epsilon_)/nu(),cGp_)));
 	
 
 	//*************************************//	
@@ -1211,6 +1170,8 @@ void turbulentPotentialN::correct()
 	
 	bound(IIb, SMALL);
 	
+	
+	
     //*************************************//
     //Dissipation equation
     //*************************************//
@@ -1218,54 +1179,7 @@ void turbulentPotentialN::correct()
 
 	if(eqncEp1_ == "true")
 	{
-		
-		if(cEp1Type_.value() == 1.0){
-			cEp1eqn = cEp1_ + (0.06 - 0.18*mag(tppsi_));
-		}
-		
-		if(cEp1Type_.value() == 2.0){
-			cEp1eqn = cEp1_ + cEp4_*(2.0*alpha_-1.0);
-		}
-		
-		if(cEp1Type_.value() == 3.0){
-			cEp1eqn = cEp1_ + 0.033*sqrt(2.0*alpha_-1.0);
-		}
-		
-		if(cEp1Type_.value() == 4.0){
-			cEp1eqn = 1.4*(1.0 + 0.012*(k_/(tpphi_*k_ + 0.01*k_)));
-		}
-		
-		if(cEp1Type_.value() == 5.0){
-			cEp1eqn = 1.4*(1.0 + 0.015*(k_/(tpphi_*k_ + 0.03*k_)));
-		}
-		
-		if(cEp1Type_.value() == 6.0){
-			cEp1eqn = 1.4*(1.0 + 0.022*(k_/(tpphi_*k_ + 0.048*k_)));
-		}
-		
-		if(cEp1Type_.value() == 7.0){
-			cEp1eqn = cEp1_*(0.985 + 0.01*(k_/(tpphi_*k_ + 0.02*k_)));
-		}
-		
-		if(cEp1Type_.value() == 8.0){
-			cEp1eqn = cEp1_*(0.994 + 0.0033*(k_/(tpphi_*k_ + 0.015*k_)));
-		}
-		
-		if(cEp1Type_.value() == 9.0){
-			cEp1eqn = cEp1_*(0.995 + 0.002*(k_/(tpphi_*k_ + 0.02*k_)));
-		}
-		
-		if(cEp1Type_.value() == 10.0){
-			cEp1eqn = cEp1_*(0.995 + 0.0045*(k_/(tpphi_*k_ + 0.015*k_)));
-		}
-		
-		if(cEp1Type_.value() == 11.0){
-			cEp1eqn = cEp1_*(0.985 + 0.008*(k_/(tpphi_*k_ + 0.02*k_)));
-		}
-		
-		if(cEp1Type_.value() == 12.0){
-			cEp1eqn = cEp1_ + cEp4_*alpha_*gamma_;
-		}
+		cEp1eqn = cEp1_ + cEp4_*(2.0*alpha_-1.0);
 	}
 	
     if(eqncEp2_ == "true")
@@ -1418,7 +1332,7 @@ void turbulentPotentialN::correct()
 	//volVectorField psiDisWall("psiDisWall", cD1_*(2.0*alpha_-1.0)*gamma_*tpphi_*vorticity_);
 	//volScalarField cS("cS", cP3_*gamma_*IIb*(tppsi_ & tppsi_) + cP4_*IIb*sqr(1.0-alpha_));
 	
-	volVectorField psiDisWall("psiDisWall", cD1_*gammak*alpha_*epsHat_*tppsi_);
+	volVectorField psiDisWall("psiDisWall", cD1_*(2.0*alpha_-1.0)*epsHat_*tppsi_);
   	
 
     //*************************************//     
