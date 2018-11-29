@@ -1082,8 +1082,8 @@ void turbulentPotentialN::correct()
 	const volVectorField gradTpphiSqrt("gradTpphiSqrt",fvc::grad(tpphiSqrt_));
 	
     //gradTpphi_ = fvc::grad(tpphi_);
-    phiSqrt_ = sqrt(tpphi_*k_ + k0_);
-	const volVectorField gradPhiSqrt_("gradPhiSqrt",fvc::grad(phiSqrt_));	
+    //phiSqrt_ = sqrt(tpphi_*k_ + k0_);
+	//const volVectorField gradPhiSqrt_("gradPhiSqrt",fvc::grad(phiSqrt_));	
 	
 	
     //*************************************//	
@@ -1115,20 +1115,15 @@ void turbulentPotentialN::correct()
 		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
 		G = tpProd_*k_;
 		GdK = tpProd_;	
-    } else if(prodType_.value() == 5.0){
-		Info<< "Using mixed 5 production term" <<endl;
-		G = alpha_*mag((tppsi_*k_) & vorticity_) + 0.27*(1.0-alpha_)*(k_ - 1.5*nut_*mag(gradPhiSqrt_))*magS;
-		tpProd_ = G/(k_+k0_);
-		GdK = tpProd_;			
-	} else{
+    } else{
 		Info<< "Using psi-vorticity production term" <<endl;
 		tpProd_ = mag(tppsi_ & vorticity_);
 		G = tpProd_*k_;
 		GdK = tpProd_;		
 	}
     
-	tpProdSqr_ = sqr(tpProd_);
-	tpProd3d_ = mag(psiReal() ^ vorticity_);
+	//tpProdSqr_ = sqr(tpProd_);
+	//tpProd3d_ = mag(psiReal() ^ vorticity_);
 	
 	
 
@@ -1172,22 +1167,7 @@ void turbulentPotentialN::correct()
     //*************************************//
     //Dissipation equation
     //*************************************//
-    volScalarField cEp1eqn("cEp1eqn",(cEp1_*(tpphi_/tpphi_)));
 
-	if(eqncEp1_ == "true")
-	{
-		cEp1eqn = cEp1_ + cEp4_*(2.0*alpha_-1.0);
-	}
-	
-    if(eqncEp2_ == "true")
-    {
-        cEp2_ = cEp2con_ - 0.16*exp(-0.25*sqr(k_)/(nu()*(epsilon_ + epsilonSmall_)));
-    }
-    else
-    {
-        cEp2_ =  cEp2con_;
-    }
-	
 
     tmp<fvScalarMatrix> epsEqn   
     (
@@ -1196,8 +1176,8 @@ void turbulentPotentialN::correct()
       + fvm::SuSp(-fvc::div(phi_), epsilon_)
       - fvm::laplacian(DepsilonEff(), epsilon_)
      ==
-       cEp1eqn*G*epsHat_
-     - fvm::Sp(cEp2_*epsHat_,epsilon_)
+       (cEp1_ + cEp4_*(2.0*alpha_-1.0))*G*epsHat_
+     - fvm::Sp(cEp2con_*epsHat_,epsilon_)
     );
 
     epsEqn().relax();
@@ -1358,10 +1338,11 @@ void turbulentPotentialN::correct()
 	{    
 	volScalarField meanUz("meanUz",U_.component(2));
 	volScalarField uTauSquared((nu() + nut_)*vorticity_.component(2));
+	volScalarField cEp1calc(cEp1_ + cEp4_*(2.0*alpha_-1.0));
 	volVectorField tpphiVort(tpphi_*vorticity_);
 	
 	Info<< "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl; 
-	Info<< "Max cEp1: " << gMax(cEp1eqn) << " Min cEp1: " << gMin(cEp1eqn) << endl;  
+	Info<< "Max cEp1: " << gMax(cEp1calc) << " Min cEp1: " << gMin(cEp1calc) << endl;  
 	Info<< "Max Epsilon: " << gMax(epsilon_) << " Min Epsilon: " << gMin(epsilon_) << " Max G: " << gMax(G) << " Max Gnut: " << gMax(Gnut) <<endl;
 	Info<< "Max nut: " << gMax(nut_) << " Max K: " << gMax(k_) << " Max Phi: " << gMax(phiActual) <<endl;
     Info<< "Max Psi: " << gMax(psiActual) << " Min Psi: " << gMin(psiActual)  <<endl;
