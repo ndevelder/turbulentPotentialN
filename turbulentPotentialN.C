@@ -878,7 +878,7 @@ turbulentPotentialN::turbulentPotentialN
     )
 {
 
-    Info<< "Made it past constructors " << endl;
+    //Info<< "Made it past constructors " << endl;
 	
 	
     //*************************************//	
@@ -900,10 +900,10 @@ turbulentPotentialN::turbulentPotentialN
     bound(epsHat_,dimensionedScalar("minEpsHat", epsHat_.dimensions(), SMALL));
 	
 	
-    Info<< "solveK is: " <<solveK_ <<endl;
-    Info<< "solveEps is: " <<solveEps_ <<endl;
-    Info<< "solvePhi is: " <<solvePhi_ <<endl;
-    Info<< "solvePsi is: " <<solvePsi_ <<endl;
+    //Info<< "solveK is: " <<solveK_ <<endl;
+    //Info<< "solveEps is: " <<solveEps_ <<endl;
+    //Info<< "solvePhi is: " <<solvePhi_ <<endl;
+    //Info<< "solvePsi is: " <<solvePsi_ <<endl;
 
     printCoeffs();
 }
@@ -1091,36 +1091,30 @@ void turbulentPotentialN::correct()
     //*************************************//
  
 	const volScalarField S2 = 2*magSqr(dev(symm(uGrad_)));
-	const volScalarField magS = sqrt(S2);
-	volScalarField G("RASModel::G", nut_*S2); 
-	volScalarField GdK("GdK", G/(k_ + k0_));
-	const volScalarField Gnut("Gnut", nut_*S2);
+	//const volScalarField magS = sqrt(S2);
+	//volScalarField G("RASModel::G", nut_*S2); 
+	//volScalarField GdK("GdK", G/(k_ + k0_));
 	
 
-	if(prodType_.value() == 1.0){
-		Info<< "Using psi-vorticity production term" <<endl;
+	//if(prodType_.value() == 1.0){
 		tpProd_ = mag(tppsi_ & vorticity_);
-		G = tpProd_*k_;
-		GdK = tpProd_;	
-	} else if(prodType_.value() == 2.0){
-		Info<< "Using strain production term" <<endl;
-		tpProd_ = GdK;
-	} else if(prodType_.value() == 3.0){
-		Info<< "Using mixed 3 production term" <<endl;
-		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + pMix_*(1.0-alpha_)*cPrK_*magS + (1.0 - pMix_)*(1.0 - alpha_)*cPrP_*tpphi_*magS;
-		G = tpProd_*k_;
-		GdK = tpProd_;	
-    } else if(prodType_.value() == 4.0){
-		Info<< "Using mixed 4 production term" <<endl;
-		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
-		G = tpProd_*k_;
-		GdK = tpProd_;	
-    } else{
-		Info<< "Using psi-vorticity production term" <<endl;
-		tpProd_ = mag(tppsi_ & vorticity_);
-		G = tpProd_*k_;
-		GdK = tpProd_;		
-	}
+		volScalarField G("RASModel::G",tpProd_*k_);
+		volScalarField GdK("GdK",tpProd_);	
+	//} else if(prodType_.value() == 2.0){
+	//	tpProd_ = GdK;
+	//} else if(prodType_.value() == 3.0){
+	//	tpProd_ = alpha_*mag(tppsi_ & vorticity_) + pMix_*(1.0-alpha_)*cPrK_*magS + (1.0 - pMix_)*(1.0 - alpha_)*cPrP_*tpphi_*magS;
+	//	G = tpProd_*k_;
+	//	GdK = tpProd_;	
+    //} else if(prodType_.value() == 4.0){
+	//	tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
+	//	G = tpProd_*k_;
+	//	GdK = tpProd_;	
+    //} else{
+	//	tpProd_ = mag(tppsi_ & vorticity_);
+	//	G = tpProd_*k_;
+	//	GdK = tpProd_;		
+	//}
     
 	//tpProdSqr_ = sqr(tpProd_);
 	//tpProd3d_ = mag(psiReal() ^ vorticity_);
@@ -1340,6 +1334,7 @@ void turbulentPotentialN::correct()
 	volScalarField uTauSquared((nu() + nut_)*vorticity_.component(2));
 	volScalarField cEp1calc(cEp1_ + cEp4_*(2.0*alpha_-1.0));
 	volVectorField tpphiVort(tpphi_*vorticity_);
+	volScalarField Gnut("Gnut", nut_*S2);
 	
 	Info<< "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl; 
 	Info<< "Max cEp1: " << gMax(cEp1calc) << " Min cEp1: " << gMin(cEp1calc) << endl;  
