@@ -1,0 +1,33 @@
+diff -Naur turbulentPotential/turbulentPotential.C turbulentPotentialFixU/turbulentPotential.C
+--- turbulentPotentialN.C	
++++ turbulentPotentialN.C	
+@@ -963,14 +963,14 @@
+ }
+ 
+ // Term that is directly added to the momentum equation
+-tmp<fvVectorMatrix> turbulentPotential::divDevReff() const
++tmp<fvVectorMatrix> turbulentPotential::divDevReff(volVectorField& U) const 
+ {
+     return
+     (
+        fvc::grad(phiReal())
+      + fvc::curl(psiReal())
+-     + fvc::laplacian(nut_, U_, "laplacian(nuEff,U_)")
+-     - fvm::laplacian(nuEff(), U_)
++     + fvc::laplacian(nut_, U, "laplacian(nuEff,U)")
++     - fvm::laplacian(nuEff(), U)
+     );
+ }
+ 
+diff -Naur turbulentPotential/turbulentPotential.H turbulentPotentialFixU/turbulentPotential.H
+--- turbulentPotentialN.H
++++ turbulentPotentialN.H
+@@ -401,7 +401,7 @@
+         virtual tmp<volSymmTensorField> devReff() const;
+ 
+         //- Return the source term for the momentum equation
+-        virtual tmp<fvVectorMatrix> divDevReff() const;
++        virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const; 
+
+         //- Solve the turbulence equations and correct the turbulence viscosity
+         virtual void correct();
