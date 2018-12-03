@@ -1090,34 +1090,35 @@ void turbulentPotentialN::correct()
     // K Production
     //*************************************//
  
-	const volScalarField S2 = 2*magSqr(dev(symm(uGrad_)));
+	
 	//const volScalarField magS = sqrt(S2);
-	//volScalarField G("RASModel::G", nut_*S2); 
-	//volScalarField GdK("GdK", G/(k_ + k0_));
+	// volScalarField G("RASModel::G", nut_*S2); 
+	// volScalarField GdK("GdK", G/(k_ + k0_));
 	
 
-	//if(prodType_.value() == 1.0){
-		tpProd_ = mag(tppsi_ & vorticity_);
-		volScalarField G("RASModel::G",tpProd_*k_);
-		volScalarField GdK("GdK",tpProd_);	
-	//} else if(prodType_.value() == 2.0){
-	//	tpProd_ = GdK;
-	//} else if(prodType_.value() == 3.0){
-	//	tpProd_ = alpha_*mag(tppsi_ & vorticity_) + pMix_*(1.0-alpha_)*cPrK_*magS + (1.0 - pMix_)*(1.0 - alpha_)*cPrP_*tpphi_*magS;
-	//	G = tpProd_*k_;
-	//	GdK = tpProd_;	
-    //} else if(prodType_.value() == 4.0){
-	//	tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
-	//	G = tpProd_*k_;
-	//	GdK = tpProd_;	
-    //} else{
-	//	tpProd_ = mag(tppsi_ & vorticity_);
-	//	G = tpProd_*k_;
-	//	GdK = tpProd_;		
-	//}
+	// if(prodType_.value() == 1.0){
+	
+	tpProd_ = mag(tppsi_ & vorticity_);
+	volScalarField G("RASModel::G",tpProd_*k_);	
+	
+	// } else if(prodType_.value() == 2.0){
+		// tpProd_ = GdK;
+	// } else if(prodType_.value() == 3.0){
+		// tpProd_ = alpha_*mag(tppsi_ & vorticity_) + pMix_*(1.0-alpha_)*cPrK_*magS + (1.0 - pMix_)*(1.0 - alpha_)*cPrP_*tpphi_*magS;
+		// G = tpProd_*k_;
+		// GdK = tpProd_;	
+    // } else if(prodType_.value() == 4.0){
+		// tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
+		// G = tpProd_*k_;
+		// GdK = tpProd_;	
+    // } else{
+		// tpProd_ = mag(tppsi_ & vorticity_);
+		// G = tpProd_*k_;
+		// GdK = tpProd_;		
+	// }
     
-	//tpProdSqr_ = sqr(tpProd_);
-	//tpProd3d_ = mag(psiReal() ^ vorticity_);
+	// tpProdSqr_ = sqr(tpProd_);
+	// tpProd3d_ = mag(psiReal() ^ vorticity_);
 	
 	
 
@@ -1330,10 +1331,12 @@ void turbulentPotentialN::correct()
 	
 	if(debugWrite_ == "true")
 	{    
+  
 	volScalarField meanUz("meanUz",U_.component(2));
 	volScalarField uTauSquared((nu() + nut_)*vorticity_.component(2));
 	volScalarField cEp1calc(cEp1_ + cEp4_*(2.0*alpha_-1.0));
 	volVectorField tpphiVort(tpphi_*vorticity_);
+	const volScalarField S2 = 2*magSqr(dev(symm(uGrad_)));
 	volScalarField Gnut("Gnut", nut_*S2);
 	
 	Info<< "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl; 
