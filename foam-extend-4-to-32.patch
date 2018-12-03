@@ -5,8 +5,8 @@ diff -Naur turbulentPotential/turbulentPotential.C turbulentPotentialFixU/turbul
  }
  
  // Term that is directly added to the momentum equation
--tmp<fvVectorMatrix> turbulentPotential::divDevReff() const
-+tmp<fvVectorMatrix> turbulentPotential::divDevReff(volVectorField& U) const 
+-tmp<fvVectorMatrix> turbulentPotentialN::divDevReff() const
++tmp<fvVectorMatrix> turbulentPotentialN::divDevReff(volVectorField& U) const
  {
      return
      (
@@ -27,7 +27,7 @@ diff -Naur turbulentPotential/turbulentPotential.H turbulentPotentialFixU/turbul
  
          //- Return the source term for the momentum equation
 -        virtual tmp<fvVectorMatrix> divDevReff() const;
-+        virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const; 
++        virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const;
 
          //- Solve the turbulence equations and correct the turbulence viscosity
          virtual void correct();
