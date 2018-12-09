@@ -106,6 +106,8 @@ class turbulentPotentialN
 			dimensionedScalar cNF_;
 			dimensionedScalar cN1_;
 			dimensionedScalar cN2_;
+			dimensionedScalar cND1_;
+			dimensionedScalar cND2_;
 			dimensionedScalar pMix_;
 			dimensionedScalar cPrK_;
 			dimensionedScalar cPrP_;
@@ -114,7 +116,9 @@ class turbulentPotentialN
             dimensionedScalar sigmaK_;
             dimensionedScalar sigmaEps_;
             dimensionedScalar sigmaPhi_;
+			dimensionedScalar sigmaPhiC_;
             dimensionedScalar sigmaPsi_;
+			dimensionedScalar sigmaPsiC_;
 			dimensionedScalar prodType_;
 			dimensionedScalar dampType_;
 			dimensionedScalar cEp1Type_;
@@ -144,9 +148,9 @@ class turbulentPotentialN
             volVectorField gradk_;
             volScalarField epsilon_;
             volScalarField nut_;
-            volScalarField nutNorm_;
             volScalarField tpphi_;
             volScalarField tpphiSqrt_;
+			volScalarField nds_;
             volVectorField vorticity_;
             volVectorField tppsi_;
             volTensorField uGrad_;
@@ -162,6 +166,7 @@ class turbulentPotentialN
 			volScalarField tpProd_;
 			volScalarField cP1eqn_;
 			volVectorField gradTpphi_;
+			volVectorField divIk_;
             volTensorField gradTppsi_;
             volScalarField tpProdSqr_;
             volScalarField tpProd3d_;
@@ -312,9 +317,9 @@ public:
         //- Return the effective diffusivity for epsilon
         tmp<volScalarField> DphiEff() const
         {
-            return tmp<volScalarField>
+            return tmp<volScalarField>  
             (
-                new volScalarField("DphiEff", nut_*sigmaPhi_ + nu())
+                new volScalarField("DphiEff", nut_*nds_*sigmaPhi_ + nu())
             );
         }
 
@@ -323,7 +328,7 @@ public:
         {
             return tmp<volScalarField>
             (
-                new volScalarField("DpsiEff", nut_*sigmaPsi_ + nu())
+                new volScalarField("DpsiEff", nut_*nds_*sigmaPsi_ + nu())
             );
         }
 
@@ -332,7 +337,7 @@ public:
         {
             return tmp<volScalarField>
             (
-                new volScalarField("DEff", nut_ + nu())
+                new volScalarField("DEff", nut_ + nu())  
             );
         }
 
