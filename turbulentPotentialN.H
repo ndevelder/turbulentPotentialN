@@ -150,7 +150,8 @@ class turbulentPotentialN
             volScalarField nut_;
             volScalarField tpphi_;
             volScalarField tpphiSqrt_;
-			volScalarField nds_;
+			volScalarField ndsPhi_;
+			volScalarField ndsPsi_;
             volVectorField vorticity_;
             volVectorField tppsi_;
             volTensorField uGrad_;
@@ -319,7 +320,7 @@ public:
         {
             return tmp<volScalarField>  
             (
-                new volScalarField("DphiEff", nut_*nds_*sigmaPhi_ + nu())
+                new volScalarField("DphiEff", nut_*ndsPhi_*sigmaPhi_ + nu())
             );
         }
 
@@ -328,7 +329,7 @@ public:
         {
             return tmp<volScalarField>
             (
-                new volScalarField("DpsiEff", nut_*nds_*sigmaPsi_ + nu())
+                new volScalarField("DpsiEff", nut_*ndsPsi_*sigmaPsi_ + nu())
             );
         }
 
