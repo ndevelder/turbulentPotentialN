@@ -1149,6 +1149,54 @@ void turbulentPotentialN::correct()
 	//const volVectorField gradPhiSqrt_("gradPhiSqrt",fvc::grad(phiSqrt_));	
 	
 	
+
+	
+
+	//*************************************//	
+    // Update Alpha
+    //*************************************//
+    
+	alpha_ = 1.0/(1.0 + 1.5*tpphi_);
+	
+	volScalarField IIb("IIb", alpha_*(2.0*alpha_-1.0));	
+	bound(IIb, SMALL);
+	
+	volScalarField phiActual("phiActual",tpphi_*k_);
+	volVectorField psiActual("psiActual",tppsi_*k_);
+	
+	volScalarField nutExact("nutExact", mag(psiActual)/(mag(vorticity_) + (cNL_/Ts())));
+
+	//volScalarField gammaNut("gammaNut", (alpha_*(psiActual & psiActual) + 0.57*(1.0-alpha_)*phiActual*phiActual)/(epsHat_*k_));
+	volScalarField gammaNut("gammaNut", pow(IIb, 0.5)*nutExact + (1.0-pow(IIb, 0.5))*cMu_*phiActual/epsHat_);
+	
+	
+	
+	
+	volScalarField gammaWall("gammaWall", 3.0*nu()*(gradTpphiSqrt & gradTpphiSqrt)*k_/epsilon_); 
+
+	gamma_ = 1.0/(1.0 + cG_*pow(gammaNut/nu(),cGp_) + cGw_*gammaWall);
+	
+	
+
+	//*************************************//	
+    // Anisotropy and Invariants
+    //*************************************//	
+	tpchi_ = 2.0*alpha_*pow(sqr(tpphi_) + (tppsi_ & tppsi_) + SMALL,0.5);
+	tpupsilon_ = min(2.0 - tpphi_ - tpchi_, 2.0);
+	
+	bound(tpchi_, SMALL);
+	bound(tpupsilon_, SMALL);
+	
+	volScalarField bphi("bphi", tpphi_ - (2.0/3.0));
+	volScalarField bchi("bchi", tpchi_ - (2.0/3.0));
+	volScalarField bups("bups", tpupsilon_ - (2.0/3.0));  
+	
+	//volScalarField D("D", (27.0/8.0)*(tpupsilon_*tpphi_*tpchi_ - tpchi_*(tppsi_ & tppsi_)));
+	//volScalarField II("II", 0.5*(sqr(tpupsilon_) + sqr(tpphi_) + sqr(tpchi_) + 2.0*(tppsi_ & tppsi_)));
+	//volScalarField IIb("IIb", 0.5*(sqr(bups) + sqr(bphi) + sqr(bchi) + 2.0*(tppsi_ & tppsi_)));
+
+	
+	
     //*************************************//	
     // K Production
     //*************************************//
@@ -1173,6 +1221,10 @@ void turbulentPotentialN::correct()
 		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + 0.94*(1.0-alpha_)*GdK;
 		G = tpProd_*k_;
 		GdK = tpProd_;	
+    }else if(prodType_.value() == 5.0){
+		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + (1.0-alpha_)*(0.2 + 0.4*(1.0-sqrt(IIb)))*magS;
+		G = tpProd_*k_;
+		GdK = tpProd_;	
     }else{
 		tpProd_ = mag(tppsi_ & vorticity_);
 		G = tpProd_*k_;
@@ -1181,44 +1233,6 @@ void turbulentPotentialN::correct()
     
 	// tpProdSqr_ = sqr(tpProd_);
 	// tpProd3d_ = mag(psiReal() ^ vorticity_);
-	
-	
-
-	//*************************************//	
-    // Update Alpha
-    //*************************************//
-    
-	alpha_ = 1.0/(1.0 + 1.5*tpphi_);
-	
-	volScalarField phiActual("phiActual",tpphi_*k_);
-	volVectorField psiActual("psiActual",tppsi_*k_);
-
-	volScalarField gammaNut("gammaNut", (alpha_*(psiActual & psiActual) + 0.57*(1.0-alpha_)*phiActual*phiActual)/(epsHat_*k_));
-	volScalarField gammaWall("gammaWall", 3.0*nu()*(gradTpphiSqrt & gradTpphiSqrt)*k_/epsilon_); 
-
-	gamma_ = 1.0/(1.0 + cG_*pow(gammaNut/nu(),cGp_) + cGw_*gammaWall);
-	
-	
-
-	//*************************************//	
-    // Anisotropy and Invariants
-    //*************************************//	
-	tpchi_ = 2.0*alpha_*pow(sqr(tpphi_) + (tppsi_ & tppsi_) + SMALL,0.5);
-	tpupsilon_ = min(2.0 - tpphi_ - tpchi_, 2.0);
-	
-	bound(tpchi_, SMALL);
-	bound(tpupsilon_, SMALL);
-	
-	volScalarField bphi("bphi", tpphi_ - (2.0/3.0));
-	volScalarField bchi("bchi", tpchi_ - (2.0/3.0));
-	volScalarField bups("bups", tpupsilon_ - (2.0/3.0));  
-	
-	//volScalarField D("D", (27.0/8.0)*(tpupsilon_*tpphi_*tpchi_ - tpchi_*(tppsi_ & tppsi_)));
-	//volScalarField II("II", 0.5*(sqr(tpupsilon_) + sqr(tpphi_) + sqr(tpchi_) + 2.0*(tppsi_ & tppsi_)));
-	//volScalarField IIb("IIb", 0.5*(sqr(bups) + sqr(bphi) + sqr(bchi) + 2.0*(tppsi_ & tppsi_)));
-	volScalarField IIb("IIb", alpha_*(2.0*alpha_-1.0));
-	
-	bound(IIb, SMALL);
 	
 	
 	
