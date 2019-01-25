@@ -59,8 +59,8 @@ turbulentPotentialNCoeffs{
 	cNF					4.0;
 	cN1					0.6;
 	cN2					2.2;
-	cND1                0.8;
-	cND2                0.8;
+	cND1                1.0;
+	cND2                1.0;
 	nutRatMax			1e5;
 	eqncMu				false;
 	cMu					0.21;
