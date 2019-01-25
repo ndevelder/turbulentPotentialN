@@ -56,7 +56,7 @@ turbulentPotentialNCoeffs{
 	cA                  0.0;  
 	
 	dampType			15.0;
-	cNF					1.0;
+	cNF					4.0;
 	cN1					0.6;
 	cN2					2.2;
 	cND1                0.8;
@@ -73,7 +73,7 @@ turbulentPotentialNCoeffs{
 	tslimiter			false;
 	lslimiter			false;
 
-	cD1					0.6; 
+	cD1					0.4; 
 	cD2					2.0;
 	cD3					1.0;
 	cD4					1.0;
