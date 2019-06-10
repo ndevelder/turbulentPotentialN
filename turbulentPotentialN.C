@@ -1157,8 +1157,10 @@ void turbulentPotentialN::correct()
     //*************************************//
     
 	alpha_ = 1.0/(1.0 + 1.5*tpphi_);
+    volScalarField beta("beta", min(alpha_/alpha_,7.0*sqr(1.0-alpha_)));
 	
-	volScalarField IIb("IIb", alpha_*(2.0*alpha_-1.0));	
+	//volScalarField IIb("IIb", alpha_*(2.0*alpha_-1.0));	
+    volScalarField IIb("IIb", sqr(2.0*alpha_-1.0) + 2.0*(tppsi_ & tppsi_));
 	bound(IIb, SMALL);
 	
 	volScalarField phiActual("phiActual",tpphi_*k_);
@@ -1168,13 +1170,11 @@ void turbulentPotentialN::correct()
 
 	//volScalarField gammaNut("gammaNut", (alpha_*(psiActual & psiActual) + 0.57*(1.0-alpha_)*phiActual*phiActual)/(epsHat_*k_));
 	volScalarField gammaNut("gammaNut", pow(IIb, 0.5)*nutExact + (1.0-pow(IIb, 0.5))*cMu_*phiActual/epsHat_);
-	
-	
-	
-	
 	volScalarField gammaWall("gammaWall", 3.0*nu()*(gradTpphiSqrt & gradTpphiSqrt)*k_/epsilon_); 
 
-	gamma_ = 1.0/(1.0 + cG_*pow(gammaNut/nu(),cGp_) + cGw_*gammaWall);
+	//gamma_ = 1.0/(1.0 + cG_*pow(gammaNut/nu(),cGp_) + cGw_*gammaWall);
+
+    gamma_ = 1.0/(1.0 + cG_*(1.0-alpha_)*sqrt(nut_/nu()));
 	
 	
 
@@ -1211,7 +1211,11 @@ void turbulentPotentialN::correct()
 		tpProd_ = mag(tppsi_ & vorticity_);
 		G = tpProd_*k_;	
 		GdK = tpProd_;
-	}else if(prodType_.value() == 2.0){
+	}else if(prodType_.value() == 1.1){
+        tpProd_ = tppsi_ & vorticity_;
+        G = tpProd_*k_;
+        GdK = tpProd_;  
+    }else if(prodType_.value() == 2.0){
 		tpProd_ = GdK;
 	}else if(prodType_.value() == 3.0){
 		tpProd_ = alpha_*mag(tppsi_ & vorticity_) + pMix_*(1.0-alpha_)*cPrK_*magS + (1.0 - pMix_)*(1.0 - alpha_)*cPrP_*tpphi_*magS;
@@ -1312,7 +1316,7 @@ void turbulentPotentialN::correct()
     // Phi/K equation 
     //*************************************//
 
-	cP1eqn_ = ((cP1_-cP1beta_) + cP1beta_*sqrt(alpha_) - 1.0)*(1.0-gamma_);
+	cP1eqn_ = (cP1_-1.0)*(1.0-gamma_);
 
     tmp<fvScalarMatrix> tpphiEqn  
     ( 
@@ -1322,19 +1326,16 @@ void turbulentPotentialN::correct()
       - fvm::laplacian(DphiEff(), tpphi_) 
       ==   
 	  // Pressure Strain Slow 
-	    cP1eqn_*(2.0/3.0)*epsHat_
-	  - fvm::Sp(cP1eqn_*epsHat_, tpphi_)    
-	  //  cP1eqn_*epsHat_*tpphi_
-	  
+	    cP1eqn_*((2.0/3.0) - tpphi_)*epsHat_
+	  + cP2_*tpProd_*tpphi_
+
 	  // Non-linear pressure strain
 	  + cD3_*nutFrac()*(sqr(bphi) + (tppsi_ & tppsi_) - (2.0/3.0)*IIb)*epsHat_
 	  
 	  // From K eqn + pressure strain fast
-      - fvm::Sp((1.0-cP2_)*tpProd_,tpphi_)
+      - fvm::Sp(tpProd_,tpphi_)
 	  
 	  // Dissipation (Commented as taken into account in cP1eqn)
-	  //- fvm::Sp((1.0-gamma_)*(2.0/3.0)*epsHat_/((tpphi_ + tph0)),tpphi_)
-	  //+ (1.0-gamma_)*tpphi_*epsHat_
 	  
 	  // Transition
       + transPhi
@@ -1364,7 +1365,7 @@ void turbulentPotentialN::correct()
 	    tpphi_*vorticity_
 		
 	  // Slow Pressure Strain
-      - fvm::Sp(cP1eqn_*epsHat_,tppsi_)
+      - fvm::Sp(cP1_*(1.0 - beta*gamma_)*epsHat_,tppsi_)
 	  + cD4_*nutFrac()*(bphi + (uudk-(2.0/3.0)))*tppsi_*epsHat_
 
 	  // Fast Pressure Strain
@@ -1372,7 +1373,9 @@ void turbulentPotentialN::correct()
 	  + cP2_*tpProd_*tppsi_ 
 
 	  
-	  - fvm::Sp((cP3_ + cD2_*alpha_)*tpProd_,tppsi_)
+	  - fvm::Sp((cD2_*alpha_)*tpProd_,tppsi_)
+      - cP3_*(1.0 - sqrt(IIb))*vorticity_
+
 	  //+ cP4_*pow(nut_/nu()+SMALL,0.5)*tpProd_*tppsi_  
       //+ cP4_*sqr(1.0-gamma_)*tpProd_*tppsi_  
 	  + cP4_*(1.0-gamma_)*pow(nut_/nu()+SMALL,0.5)*(1.0-alpha_)*vorticity_
@@ -1383,12 +1386,12 @@ void turbulentPotentialN::correct()
 	  
 	  // Dissipation 
 	  // Dissipation 
-	  //+ (1.0-gamma_)*tppsi_*epsHat_  
+	  + (1.0-beta*gamma_)*tppsi_*epsHat_  
 	  //+ cD1_*(2.0*alpha_-1.0)*tpphi_*vorticity_  
-	  + cD1_*gamma_*alpha_*tpProd_*tppsi_ 
+	 
 
 	  // Transition Term
-      + transPsi
+      + transPsi  
     );
 
     tppsiEqn().relax();  
@@ -1402,14 +1405,10 @@ void turbulentPotentialN::correct()
     //*************************************//
     T = Ts();
 
-	nut_ = cMu_*(cN1_*phiActual + cN2_*(psiActual & tppsi_))*T;	
-
-	ndsPhi_ = cND1_ + (1.0 - cND1_)*(psiActual & psiActual)/(cMu_*phiActual*k_);
-	ndsPsi_ = cND2_ + (1.0 - cND2_)*(psiActual & psiActual)/(cMu_*phiActual*k_);
-	
-	nut_ = min(nut_,nutRatMax_*nu());
-	nut_.correctBoundaryConditions();  
-	bound(nut_,nut0);   
+	nut_ = (cN1_ + (1.0 - cN1_)*(psiActual & psiActual)/(cMu_*phiActual*k_))*cMu_*phiActual/epsHat_; 
+	nut_ = min(nut_,nutRatMax_*nu()); 
+	nut_.correctBoundaryConditions();
+    bound(nut_,nut0); 
   
 
 	

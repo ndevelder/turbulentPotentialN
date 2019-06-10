@@ -10,7 +10,7 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      RASProperties;
+    object      RASProperties; 
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -28,17 +28,17 @@ turbulentPotentialNCoeffs{
 	solvePhi            true;
 	solveNut            true;
 
-	sigmaK              1.1; 
-	sigmaEps            0.83; 
-	sigmaPhi            0.4;
-	sigmaPsi            1.1; 
+	sigmaK              1.0; 
+	sigmaEps            0.8; 
+	sigmaPhi            0.5;
+	sigmaPsi            1.0; 
 	
-	prodType			1.0;
+	prodType			1.1;
 	cPrK				0.2;
 	cPrP				1.0; 
 	pMix				0.5;
         gType                           7.0;
-        cG				0.05;
+        cG				0.72;
 	cGw				1.0;
         cGp                             1.0;
 
@@ -56,11 +56,11 @@ turbulentPotentialNCoeffs{
 	cA                  0.0;  
 	
 	dampType			15.0;
-	cNF					4.0;
+	cNF					0.5;
 	cN1					0.6;
 	cN2					2.2;
-	cND1                1.0;
-	cND2                1.0;
+	cND1                0.8;
+	cND2                0.8;
 	nutRatMax			1e5;
 	eqncMu				false;
 	cMu					0.21;
@@ -73,20 +73,20 @@ turbulentPotentialNCoeffs{
 	tslimiter			false;
 	lslimiter			false;
 
-	cD1					0.4; 
-	cD2					2.0;
+	cD1					0.0; 
+	cD2					1.0;
 	cD3					1.0;
 	cD4					1.0;
  
-	cP1					1.6; 
-    cP1beta            0.0;
-	cP1chi					0.9;
-        cP1pow					1.0;
-	cP1type					1.0;
-        cP2				0.6;  
-	cP3				 	0.0;
-	cP4					0.008;
-        cP5                       		0.04;
+	cP1					1.7; 
+    cP1beta            	0.0;
+	cP1chi				0.9;
+    cP1pow				1.0;
+	cP1type				1.0;
+    cP2					0.6;  
+	cP3				 	0.08;
+	cP4					0.006;
+    cP5                 0.04;
 
 	debugWrite          true;
 }
@@ -100,4 +100,5 @@ boundaryCoeffs{
 }
 
 // ************************************************************************* //
+
 
